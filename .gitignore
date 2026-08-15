@@ -1,0 +1,12 @@
+# Node & Package Manager
+node_modules/
+
+# Binaries & Build outputs
+*.exe
+*.dll
+*.obj
+*.o
+*.vsix
+out/
+dist/
+.vscode-test/

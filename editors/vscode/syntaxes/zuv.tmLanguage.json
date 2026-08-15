@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Zuv",
+  "patterns": [
+    { "include": "#keywords" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#comments" }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [{
+        "name": "keyword.control.zuv",
+        "match": "\\b(if|els|wh|fr|brk|cont|mch|imp|frm|asc|awt|spn|jn|wrk|obj|mut|ok|err)\\b"
+      }, {
+        "name": "keyword.other.log.zuv",
+        "match": "\\b(prnt|lg|wrn|inf|err)\\b"
+      }]
+    },
+    "strings": {
+      "name": "string.quoted.double.zuv",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.zuv",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.zuv",
+      "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+    },
+    "comments": {
+      "patterns": [{
+        "name": "comment.line.double-slash.zuv",
+        "match": "//.*$"
+      }]
+    }
+  },
+  "scopeName": "source.zuv"
+}

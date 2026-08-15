@@ -1,0 +1,44 @@
+{
+  "name": "vscode-zuv",
+  "displayName": "Zuv Language Support",
+  "description": "Language support, syntax highlighting, and LSP integration for Zuv",
+  "version": "1.0.0",
+  "publisher": "zuv-lang",
+  "engines": {
+    "vscode": "^1.125.0",
+    "node": ">=26.0.0"
+  },
+  "main": "./out/extension.js",
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:zuv"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "zuv",
+      "aliases": ["Zuv", "zuv"],
+      "extensions": [".zv", ".rj"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "zuv",
+      "scopeName": "source.zuv",
+      "path": "./syntaxes/zuv.tmLanguage.json"
+    }]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "@types/vscode": "^1.125.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^10.1.0"
+  }
+}
