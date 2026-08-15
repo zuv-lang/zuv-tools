@@ -45,6 +45,9 @@ npm install
 # Compile TypeScript source (src/extension.ts -> out/extension.js)
 npm run compile
 
-# (Optional) Package extension into a .vsix installer
+# Package the extension, including the already-built zuv-lsp.exe server
 npx vsce package
+
+# Install the packaged extension in VS Code
+code --install-extension vscode-zuv-0.0.1.vsix --force
 ```

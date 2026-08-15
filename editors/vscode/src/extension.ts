@@ -1,5 +1,3 @@
-import * as path from 'path';
-import * as fs from 'fs';
 import { workspace, ExtensionContext } from 'vscode';
 import {
     LanguageClient,
@@ -10,13 +8,7 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-    // 1. Check if zuv-lsp binary exists inside the extension directory
-    let serverPath = context.asAbsolutePath('zuv-lsp.exe');
-
-    // 2. Fallback: check workspace / system PATH or sub_projects/zuv-tools
-    if (!fs.existsSync(serverPath)) {
-        serverPath = 'zuv-lsp'; // fallback to PATH lookup
-    }
+    const serverPath = context.asAbsolutePath('server/zuv-lsp.exe');
 
     const serverOptions: Executable = {
         command: serverPath,

@@ -2,8 +2,12 @@
   "name": "vscode-zuv",
   "displayName": "Zuv Language Support",
   "description": "Language support, syntax highlighting, and LSP integration for Zuv",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "publisher": "zuv-lang",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuv-lang/zuv-tools.git"
+  },
   "engines": {
     "vscode": "^1.125.0",
     "node": ">=26.0.0"
@@ -19,7 +23,7 @@
     "languages": [{
       "id": "zuv",
       "aliases": ["Zuv", "zuv"],
-      "extensions": [".zv", ".rj"],
+      "extensions": [".zv"],
       "configuration": "./language-configuration.json"
     }],
     "grammars": [{
@@ -29,8 +33,9 @@
     }]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run compile && npm run copy-server",
     "compile": "tsc -p ./",
+    "copy-server": "node ./scripts/copy-server.js",
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
