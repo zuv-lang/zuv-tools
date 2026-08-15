@@ -1,6 +1,6 @@
 {
   "name": "vscode-zuv",
-  "displayName": "Zuv Language Support",
+  "displayName": "Zuv Developer Tools",
   "description": "Language support, syntax highlighting, and LSP integration for Zuv",
   "version": "0.0.1",
   "publisher": "zuv-lang",
