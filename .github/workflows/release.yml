@@ -1,0 +1,350 @@
+name: Release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Semantic version increment to apply
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  determine-version:
+    name: Determine Release Version
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      target_commit: ${{ steps.commit.outputs.sha }}
+
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.merge_commit_sha || github.sha }}
+
+      - name: Select target commit
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate next semantic version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MANUAL_RELEASE_TYPE: ${{ inputs.release_type }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_type="$MANUAL_RELEASE_TYPE"
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            labels="$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name')"
+
+            matching_labels="$(grep -Ex 'release:(major|minor|patch)' <<< "$labels" || true)"
+
+            if [ "$(sed '/^$/d' <<< "$matching_labels" | wc -l)" -gt 1 ]; then
+              echo "Use only one of: release:major, release:minor, release:patch."
+              exit 1
+            elif grep -qx 'release:major' <<< "$labels"; then
+              release_type=major
+            elif grep -qx 'release:minor' <<< "$labels"; then
+              release_type=minor
+            else
+              release_type=patch
+            fi
+          fi
+
+          latest_tag="$(git tag -l 'v[0-9]*' --sort=-version:refname | head -n 1)"
+          latest_version="${latest_tag#v}"
+
+          if [ -z "$latest_tag" ]; then
+            latest_version="0.0.0"
+          fi
+
+          IFS=. read -r major minor patch <<< "$latest_version"
+
+          case "$release_type" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+            *)
+              echo "Unsupported release type: $release_type"
+              exit 1
+              ;;
+          esac
+
+          echo "tag=v${major}.${minor}.${patch}" >> "$GITHUB_OUTPUT"
+
+
+  # ============================================================
+  # Build LSP for Windows / Linux / macOS
+  # ============================================================
+
+  build-lsp:
+    name: Build LSP (${{ matrix.target }})
+    needs: determine-version
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows-x64
+            binary: zuv-lsp.exe
+            asset_name: zuv-lsp-windows-x64.zip
+
+          - os: ubuntu-latest
+            target: linux-x64
+            binary: zuv-lsp
+            asset_name: zuv-lsp-linux-x64.tar.gz
+
+          - os: macos-latest
+            target: macos-arm64
+            binary: zuv-lsp
+            asset_name: zuv-lsp-macos-arm64.tar.gz
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.determine-version.outputs.target_commit }}
+
+      # -------------------------
+      # Windows
+      # -------------------------
+
+      - name: Set up MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build LSP (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cl /std:c++17 /EHsc /I src /Fe:${{ matrix.binary }} src/main.cpp src/LSP.cpp
+
+      # -------------------------
+      # Linux
+      # -------------------------
+
+      - name: Build LSP (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          g++ -std=c++17 -O2 -I src \
+            src/main.cpp \
+            src/LSP.cpp \
+            -o "${{ matrix.binary }}"
+
+      # -------------------------
+      # macOS
+      # -------------------------
+
+      - name: Build LSP (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          clang++ -std=c++17 -O2 -I src \
+            src/main.cpp \
+            src/LSP.cpp \
+            -o "${{ matrix.binary }}"
+
+      # -------------------------
+      # Smoke test
+      # -------------------------
+
+      - name: Smoke-test LSP (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          '' | .\${{ matrix.binary }}
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Smoke-test LSP (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          chmod +x "./${{ matrix.binary }}"
+
+          printf '' | "./${{ matrix.binary }}"
+
+      # -------------------------
+      # Package
+      # -------------------------
+
+      - name: Package Windows LSP
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path "${{ matrix.binary }}" `
+            -DestinationPath "${{ matrix.asset_name }}"
+
+      - name: Package Unix LSP
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          chmod +x "./${{ matrix.binary }}"
+
+          tar -czvf "${{ matrix.asset_name }}" \
+            "${{ matrix.binary }}"
+
+      # -------------------------
+      # Upload
+      # -------------------------
+
+      - name: Upload LSP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zuv-lsp-${{ matrix.target }}
+          path: ${{ matrix.asset_name }}
+          if-no-files-found: error
+
+
+  # ============================================================
+  # Build VS Code extension ONCE
+  # ============================================================
+
+  build-extension:
+    name: Build VS Code Extension
+    needs: determine-version
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.determine-version.outputs.target_commit }}
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build Windows LSP for extension
+        shell: pwsh
+        run: |
+          cl /std:c++17 /EHsc /I src /Fe:zuv-lsp.exe src/main.cpp src/LSP.cpp
+
+      - name: Copy LSP into VS Code extension
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force `
+            -Path editors/vscode/server | Out-Null
+
+          Copy-Item `
+            "zuv-lsp.exe" `
+            "editors/vscode/server/zuv-lsp.exe"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+
+      - name: Install extension dependencies
+        working-directory: editors/vscode
+        run: npm ci
+
+      - name: Package VS Code extension
+        working-directory: editors/vscode
+        run: npx vsce package
+
+      - name: Verify packaged language server
+        shell: pwsh
+        working-directory: editors/vscode
+        run: |
+          $vsix = Get-ChildItem -Filter *.vsix | Select-Object -First 1
+
+          if (-not $vsix) {
+            throw "VSIX package was not created."
+          }
+
+          $contents = tar -tf $vsix.FullName
+
+          if (-not ($contents | Select-String -Quiet 'extension/server/zuv-lsp\.exe')) {
+            throw "The VSIX does not include extension/server/zuv-lsp.exe."
+          }
+
+      - name: Upload VS Code extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-zuv-extension
+          path: editors/vscode/*.vsix
+          if-no-files-found: error
+
+
+  # ============================================================
+  # Publish everything
+  # ============================================================
+
+  publish:
+    name: Publish GitHub Release
+
+    needs:
+      - determine-version
+      - build-lsp
+      - build-extension
+
+    runs-on: ubuntu-latest
+
+    if: |
+      needs.build-lsp.result == 'success' &&
+      needs.build-extension.result == 'success'
+
+    env:
+      RELEASE_TAG: ${{ needs.determine-version.outputs.tag }}
+      TARGET_COMMIT: ${{ needs.determine-version.outputs.target_commit }}
+
+    steps:
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List release assets
+        run: |
+          find release-assets -type f -maxdepth 2 -print
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          target_commitish: ${{ env.TARGET_COMMIT }}
+          files: release-assets/*
+          generate_release_notes: true
