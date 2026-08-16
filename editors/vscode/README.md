@@ -1,6 +1,6 @@
 # Zuv for VS Code
 
-Official Visual Studio Code support for the **Zuv programming language**.
+Official Visual Studio Code support for the **[Zuv programming language](https://github.com/zuv-lang/zuv)**.
 
 Zuv is a modern, high-performance, statically typed compiled language built on LLVM. It focuses on simple, concise syntax, memory safety, native performance, and a productive developer experience.
 
@@ -38,3 +38,8 @@ Key language features include:
 * Native multithreading
 * Async/await
 * Self-hosting compiler
+
+## Project Links
+
+* **Zuv Language:** https://github.com/zuv-lang/zuv
+* **VS Code Extension:** https://marketplace.visualstudio.com/items?itemName=zuv-lang.vscode-zuv

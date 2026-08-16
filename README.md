@@ -1,43 +1,47 @@
-# Zuv Tools & VS Code Extension (zuv-tools)
+# Zuv Tools & VS Code Extension
 
-A dedicated Language Server Protocol (LSP) implementation and VS Code Extension for the **Zuv** programming language toolchain.
+Developer tools for the **[Zuv programming language](https://github.com/zuv-lang/zuv)**, including the Zuv Language Server and official VS Code extension.
 
 ## Features
-- **Stdio JSON-RPC 2.0**: Implements language server protocol transport layer.
-- **Initialize & Shutdown Handlers**: Supports client handshake capabilities.
-- **Diagnostics & Hover**: Provides live static checks and documentation hovering.
-- **VS Code Client Integration**: TypeScript client connecting VS Code editor to `zuv-lsp.exe`.
 
----
+* **Language Server Protocol (LSP)**: Provides language-aware development features.
+* **Stdio JSON-RPC 2.0**: LSP communication over standard input/output.
+* **Diagnostics & Hover**: Live code diagnostics and documentation information.
+* **VS Code Integration**: Official VS Code extension for Zuv.
+* **Automatic LSP Management**: Downloads the matching LSP release for the user's platform when required.
+* **Cross-Platform LSP**:
 
-## Build Instructions
+  * Windows x64
+  * Linux x64
+  * macOS ARM64
 
-### 1. Build Standalone Language Server (`zuv-lsp.exe`)
+## VS Code Extension
 
-Make sure you include `-Isrc` when running from the `sub_projects/zuv-tools` directory:
+Install the official **[Zuv VS Code Extension](https://marketplace.visualstudio.com/items?itemName=zuv-lang.vscode-zuv)** from the Visual Studio Code Marketplace.
 
-```bash
-# Navigate to the subproject directory
-cd sub_projects/zuv-tools
+The extension automatically detects the user's platform and downloads the matching Zuv Language Server from GitHub Releases when it is not already available.
 
-# Compile the C++ language server binary
-clang++ -std=c++17 -Isrc -o zuv-lsp.exe src/main.cpp src/LSP.cpp
+The LSP is stored in:
+
+```text
+Windows: C:\Users\<user>\zuv\bin
+Linux:   /home/<user>/zuv/bin
+macOS:   /Users/<user>/zuv/bin
 ```
 
-*Or from the repository root:*
+## Build Language Server
+
+From the `zuv-tools` directory:
+
 ```bash
-clang++ -std=c++17 -Isub_projects/zuv-tools/src -o sub_projects/zuv-tools/zuv-lsp.exe sub_projects/zuv-tools/src/main.cpp sub_projects/zuv-tools/src/LSP.cpp
+clang++ -std=c++17 -Isrc -o zuv-lsp src/main.cpp src/LSP.cpp
 ```
 
----
-
-### 2. Build & Package VS Code Extension
-
-To install and compile the TypeScript VS Code extension client:
+## Build VS Code Extension
 
 ```bash
 # Navigate to the VS Code extension directory
-cd sub_projects/zuv-tools/editors/vscode
+cd editors/vscode
 
 # Install Node.js dependencies
 npm install
@@ -51,3 +55,13 @@ npx vsce package
 # Install the packaged extension in VS Code
 code --install-extension vscode-zuv-0.0.1.vsix --force
 ```
+
+## Project Links
+
+* **Zuv Language:** https://github.com/zuv-lang/zuv
+* **Zuv Tools:** https://github.com/zuv-lang/zuv-tools
+* **VS Code Extension:** https://marketplace.visualstudio.com/items?itemName=zuv-lang.vscode-zuv
+
+## License
+
+MIT
