@@ -2,7 +2,7 @@
   "name": "vscode-zuv",
   "displayName": "Zuv Developer Tools",
   "description": "Language support, syntax highlighting, and LSP integration for Zuv",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "zuv-lang",
   "repository": {
     "type": "git",
@@ -35,7 +35,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "test": "npm run compile && npm run copy-server",
+    "demo": "npm run compile && npm run copy-server",
     "copy-server": "node ./scripts/copy-server.js",
     "watch": "tsc -watch -p ./"
   },
