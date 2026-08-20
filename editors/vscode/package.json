@@ -2,7 +2,7 @@
   "name": "vscode-zuv",
   "displayName": "Zuv Developer Tools",
   "description": "Language support, syntax highlighting, and LSP integration for Zuv",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "publisher": "zuv-lang",
   "repository": {
     "type": "git",
@@ -30,6 +30,10 @@
       "language": "zuv",
       "scopeName": "source.zuv",
       "path": "./syntaxes/zuv.tmLanguage.json"
+    }],
+    "snippets": [{
+      "language": "zuv",
+      "path": "./snippets/zuv.json"
     }]
   },
   "scripts": {

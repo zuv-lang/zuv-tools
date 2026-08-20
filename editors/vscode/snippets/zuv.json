@@ -1,0 +1,91 @@
+{
+  "Function Declaration": {
+    "prefix": "fn",
+    "body": [
+      "${1:functionName} ${2:args} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Declare a new Zuv function"
+  },
+  "Main Function": {
+    "prefix": "main",
+    "body": [
+      "main {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Zuv entry point function"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "If statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ifelse",
+    "body": [
+      "if ${1:condition} {",
+      "\t${2}",
+      "} els {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "If-else statement"
+  },
+  "While Loop": {
+    "prefix": "wh",
+    "body": [
+      "wh ${1:condition} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "Match Statement": {
+    "prefix": "mch",
+    "body": [
+      "mch ${1:target} {",
+      "\tok ${2:val} => ${3},",
+      "\terr ${4:e} => ${0}",
+      "}"
+    ],
+    "description": "Match result statement"
+  },
+  "Object Declaration": {
+    "prefix": "obj",
+    "body": [
+      "${1:objName} = {",
+      "\t${2:key}: ${3:value}${0}",
+      "}"
+    ],
+    "description": "Create a new object"
+  },
+  "Async Task": {
+    "prefix": "asc",
+    "body": [
+      "asc {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Asynchronous block"
+  },
+  "Log Print": {
+    "prefix": "lg",
+    "body": [
+      "lg ${1:\"message\"}${0}"
+    ],
+    "description": "Print to stdout with newline"
+  },
+  "Import Module": {
+    "prefix": "imp",
+    "body": [
+      "imp ${1:str}${0}"
+    ],
+    "description": "Import standard or local module"
+  }
+}

@@ -12,16 +12,19 @@
     { "open": "{", "close": "}" },
     { "open": "[", "close": "]" },
     { "open": "(", "close": ")" },
-    { "open": "\"", "close": "\"", "notIn": ["string"] }
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "'", "close": "'", "notIn": ["string", "comment"] }
   ],
   "surroundingPairs": [
     ["{", "}"],
     ["[", "]"],
     ["(", ")"],
-    ["\"", "\""]
+    ["\"", "\""],
+    ["'", "'"]
   ],
   "indentationRules": {
-    "increaseIndentPattern": "^((?!//).)*(\\{|\\b(main|obj|if|els|wh|fr|asc|wrk)\\b)[^\\}]*$",
+    "increaseIndentPattern": "^((?!//).)*(\\{|\\b(main|obj|if|els|wh|fr|asc|wrk|mch)\\b)[^\\}]*$",
     "decreaseIndentPattern": "^\\s*\\}"
-  }
+  },
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)"
 }
